@@ -1,56 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Mind Map Creator</title>
-<style>
-    .node {
-        border: 2px solid #555;
-        padding: 10px;
-        margin: 5px;
-        display: inline-block;
-        cursor: pointer;
-        background-color: #f9f9f9;
-        position: absolute;
-    }
-    .title {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    .body {
-        font-size: 0.9em;
-        min-height: 50px;
-    }
-    #mindMap {
-        position: relative;
-        height: 80vh;
-        width: 100%;
-        background: #EEE;
-        overflow: hidden;
-    }
-    svg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-    }
-    .active {
-        border-color: red;
-    }
-    #statusLine {
-        color: #333;
-        padding: 10px;
-        text-align: center;
-        background-color: #f0f0f0;
-    }
-    #controls {
-        text-align: center;
-        padding: 10px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Mind Map Creator</title>
+    <style>
+        .node {
+            border: 2px solid #555;
+            padding: 10px;
+            margin: 5px;
+            display: inline-block;
+            cursor: pointer;
+            background-color: #f9f9f9;
+            position: absolute;
+        }
+
+        .title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .body {
+            font-size: 0.9em;
+            min-height: 50px;
+        }
+
+        #mindMap {
+            position: relative;
+            height: 80vh;
+            width: 100%;
+            background: #EEE;
+            overflow: hidden;
+        }
+
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .active {
+            border-color: red;
+        }
+
+        #statusLine {
+            color: #333;
+            padding: 10px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        #controls {
+            text-align: center;
+            padding: 10px;
+        }
+    </style>
 </head>
+
 <body>
     <div id="statusLine">Node Edit Mode</div>
     <div id="mindMap">
@@ -60,6 +69,8 @@
         <button onclick="addNode()">Add Node</button>
         <button onclick="toggleConnectionMode()">Toggle Connection Mode</button>
         <button onclick="exportMindMap()">Export Mind Map</button>
+        <input type="file" id="importFile" accept=".html">
+        <button onclick="importMindmap()">Import Mindmap</button>   
     </div>
     <script>
         let selectedNode = null;
@@ -125,8 +136,8 @@
             updateLineCoordinates(line, from, to);
             line.setAttribute('stroke', 'black');
             svg.appendChild(line);
-            nodeConnections.get(from).push({line: line, otherNode: to});
-            nodeConnections.get(to).push({line: line, otherNode: from});
+            nodeConnections.get(from).push({ line: line, otherNode: to });
+            nodeConnections.get(to).push({ line: line, otherNode: from });
         }
 
         function updateLineCoordinates(line, from, to) {
@@ -163,6 +174,7 @@
             display: inline-block;
             background-color: #f9f9f9;
             position: absolute;
+            z-index: 2; /* Higher z-index so nodes appear above lines */
         }
         .title {
             font-weight: bold;
@@ -185,11 +197,12 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 1; /* Higher z-index so nodes appear above lines */
         }
     </style>
 </head>
 <body>`;
-    const footer = `</body></html>`;
+    const footer = ``;
 
     // Cloning the SVG and mind map contents
     const svgClone = svg.cloneNode(true);
@@ -212,6 +225,23 @@
 }
 
 
+function importMindmap() {
+    const fileInput = document.getElementById('importFile');
+    if (fileInput.files.length > 0) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const mindMapContainer = document.getElementById('mindMap');
+            mindMapContainer.innerHTML = e.target.result;  // Assuming the file contains only the relevant HTML
+        };
+        reader.readAsText(fileInput.files[0]);
+    } else {
+        alert('Please select a file to import.');
+    }
+}
+
+
+
     </script>
 </body>
+
 </html>
