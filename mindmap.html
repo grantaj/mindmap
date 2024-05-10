@@ -10,22 +10,47 @@
         margin: 5px;
         display: inline-block;
         cursor: pointer;
+        background-color: #f9f9f9;
+    }
+    .title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .body {
+        font-size: 0.9em;
+        min-height: 50px;
     }
 </style>
 </head>
 <body>
     <div id="mindMap">
-        <div class="node">Start Node</div>
+        <div class="node" onclick="event.stopPropagation();">
+            <div class="title" contenteditable="true">Start Title</div>
+            <div class="body" contenteditable="true">Start Body</div>
+        </div>
     </div>
     <button onclick="addNode()">Add Node</button>
     <script>
         function addNode() {
             var newNode = document.createElement("div");
             newNode.classList.add("node");
-            newNode.textContent = "New Node";
-            newNode.onclick = function() { this.remove(); };
+            newNode.onclick = function(event) { event.stopPropagation(); };
+
+            var newTitle = document.createElement("div");
+            newTitle.classList.add("title");
+            newTitle.contentEditable = true;
+            newTitle.textContent = "New Title";
+
+            var newBody = document.createElement("div");
+            newBody.classList.add("body");
+            newBody.contentEditable = true;
+            newBody.textContent = "New Body";
+
+            newNode.appendChild(newTitle);
+            newNode.appendChild(newBody);
             document.getElementById("mindMap").appendChild(newNode);
         }
     </script>
 </body>
 </html>
+
