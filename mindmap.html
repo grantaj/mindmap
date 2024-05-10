@@ -45,6 +45,7 @@
     <script>
         let selectedNode = null;
         const svg = document.querySelector('svg');
+        const nodeConnections = {};
 
         function addNode() {
             const newNode = document.createElement("div");
@@ -53,6 +54,7 @@
             newNode.style.top = Math.random() * 300 + 'px';
             newNode.draggable = true;
             newNode.ondragend = handleDragEnd;
+            nodeConnections[newNode] = [];
 
             const newTitle = document.createElement("div");
             newTitle.classList.add("title");
@@ -81,21 +83,34 @@
         function handleDragEnd(event) {
             this.style.left = event.pageX + 'px';
             this.style.top = event.pageY + 'px';
+            updateLines(this);
         }
 
         function drawLine(from, to) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            updateLineCoordinates(line, from, to);
+            line.setAttribute('stroke', 'black');
+            svg.appendChild(line);
+            nodeConnections[from].push({line: line, to: to});
+            nodeConnections[to].push({line: line, from: from});
+        }
+
+        function updateLineCoordinates(line, from, to) {
             const x1 = from.offsetLeft + from.offsetWidth / 2;
             const y1 = from.offsetTop + from.offsetHeight / 2;
             const x2 = to.offsetLeft + to.offsetWidth / 2;
             const y2 = to.offsetTop + to.offsetHeight / 2;
-
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', x1);
             line.setAttribute('y1', y1);
             line.setAttribute('x2', x2);
             line.setAttribute('y2', y2);
-            line.setAttribute('stroke', 'black');
-            svg.appendChild(line);
+        }
+
+        function updateLines(node) {
+            const connections = nodeConnections[node];
+            connections.forEach(connection => {
+                updateLineCoordinates(connection.line, node, connection.to);
+            });
         }
     </script>
 </body>
