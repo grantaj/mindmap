@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mind Map Creator</title>
+<style>
+    .node {
+        border: 2px solid #555;
+        padding: 10px;
+        margin: 5px;
+        display: inline-block;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+    <div id="mindMap">
+        <div class="node">Start Node</div>
+    </div>
+    <button onclick="addNode()">Add Node</button>
+    <script>
+        function addNode() {
+            var newNode = document.createElement("div");
+            newNode.classList.add("node");
+            newNode.textContent = "New Node";
+            newNode.onclick = function() { this.remove(); };
+            document.getElementById("mindMap").appendChild(newNode);
+        }
+    </script>
+</body>
+</html>
