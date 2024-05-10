@@ -11,6 +11,7 @@
         display: inline-block;
         cursor: pointer;
         background-color: #f9f9f9;
+        position: absolute;
     }
     .title {
         font-weight: bold;
@@ -20,37 +21,82 @@
         font-size: 0.9em;
         min-height: 50px;
     }
+    #mindMap {
+        position: relative;
+        height: 500px;
+        width: 100%;
+        background: #EEE;
+    }
+    svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
 </style>
 </head>
 <body>
     <div id="mindMap">
-        <div class="node" onclick="event.stopPropagation();">
-            <div class="title" contenteditable="true">Start Title</div>
-            <div class="body" contenteditable="true">Start Body</div>
-        </div>
+        <svg></svg>
     </div>
     <button onclick="addNode()">Add Node</button>
     <script>
-        function addNode() {
-            var newNode = document.createElement("div");
-            newNode.classList.add("node");
-            newNode.onclick = function(event) { event.stopPropagation(); };
+        let selectedNode = null;
+        const svg = document.querySelector('svg');
 
-            var newTitle = document.createElement("div");
+        function addNode() {
+            const newNode = document.createElement("div");
+            newNode.classList.add("node");
+            newNode.style.left = Math.random() * 500 + 'px';
+            newNode.style.top = Math.random() * 300 + 'px';
+            newNode.draggable = true;
+            newNode.ondragend = handleDragEnd;
+
+            const newTitle = document.createElement("div");
             newTitle.classList.add("title");
             newTitle.contentEditable = true;
             newTitle.textContent = "New Title";
 
-            var newBody = document.createElement("div");
+            const newBody = document.createElement("div");
             newBody.classList.add("body");
             newBody.contentEditable = true;
             newBody.textContent = "New Body";
 
             newNode.appendChild(newTitle);
             newNode.appendChild(newBody);
+            newNode.onclick = function(event) {
+                event.stopPropagation();
+                if (selectedNode) {
+                    drawLine(selectedNode, this);
+                    selectedNode = null;
+                } else {
+                    selectedNode = this;
+                }
+            };
             document.getElementById("mindMap").appendChild(newNode);
+        }
+
+        function handleDragEnd(event) {
+            this.style.left = event.pageX + 'px';
+            this.style.top = event.pageY + 'px';
+        }
+
+        function drawLine(from, to) {
+            const x1 = from.offsetLeft + from.offsetWidth / 2;
+            const y1 = from.offsetTop + from.offsetHeight / 2;
+            const x2 = to.offsetLeft + to.offsetWidth / 2;
+            const y2 = to.offsetTop + to.offsetHeight / 2;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1);
+            line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2);
+            line.setAttribute('y2', y2);
+            line.setAttribute('stroke', 'black');
+            svg.appendChild(line);
         }
     </script>
 </body>
 </html>
-
