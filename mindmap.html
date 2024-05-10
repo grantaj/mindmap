@@ -69,8 +69,8 @@
         <button onclick="addNode()">Add Node</button>
         <button onclick="toggleConnectionMode()">Toggle Connection Mode</button>
         <button onclick="exportMindMap()">Export Mind Map</button>
-        <input type="file" id="importFile" accept=".html">
-        <button onclick="importMindmap()">Import Mindmap</button>   
+        <button onclick="exportToJson()">Export to JSON</button>
+        <button onclick="importFromJson()">Import from JSON</button>
     </div>
     <script>
         let selectedNode = null;
@@ -83,6 +83,7 @@
         function addNode() {
             const newNode = document.createElement("div");
             newNode.classList.add("node");
+            newNode.id = "node_" + Date.now();  // Example ID based on timestamp
             newNode.style.left = Math.random() * (mindMap.clientWidth - 100) + 'px';
             newNode.style.top = Math.random() * (mindMap.clientHeight - 50) + 'px';
             newNode.draggable = true;
@@ -158,86 +159,103 @@
             });
         }
 
-        function exportMindMap() {
-    // HTML header with embedded CSS for the exported file
-    const header = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Exported Mind Map</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .node {
-            border: 2px solid #555;
-            padding: 10px;
-            margin: 5px;
-            display: inline-block;
-            background-color: #f9f9f9;
-            position: absolute;
-            z-index: 2; /* Higher z-index so nodes appear above lines */
-        }
-        .title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .body {
-            font-size: 0.9em;
-            min-height: 50px;
-        }
-        #mindMap {
-            position: relative;
-            height: 100vh;
-            width: 100%;
-            background: #EEE;
-        }
-        svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1; /* Higher z-index so nodes appear above lines */
-        }
-    </style>
-</head>
-<body>`;
-    const footer = ``;
-
-    // Cloning the SVG and mind map contents
-    const svgClone = svg.cloneNode(true);
-    const nodesClone = document.createElement("div");
-    nodesClone.id = "mindMap";
-    Array.from(mindMap.querySelectorAll('.node')).forEach(node => {
-        const clonedNode = node.cloneNode(true);
-        clonedNode.removeAttribute('draggable');
-        clonedNode.removeAttribute('contenteditable');
-        nodesClone.appendChild(clonedNode);
+        function exportToJson() {
+    let nodes = [];
+    document.querySelectorAll('.node').forEach(node => {
+        nodes.push({
+            id: node.id,
+            title: node.querySelector('.title').textContent,
+            body: node.querySelector('.body').textContent,
+            position: { x: node.style.left, y: node.style.top }
+        });
     });
 
-    // Concatenating the full HTML for export
-    const fullHtml = header + nodesClone.outerHTML + svgClone.outerHTML + footer;
-    const blob = new Blob([fullHtml], {type: 'text/html'});
+    let connections = [];
+    nodeConnections.forEach((connectionsArray, node) => {
+        // Ensure 'node' has a valid 'id' and connectionsArray is populated
+        if (node.id && connectionsArray.length) {
+            connections.push({
+                from: node.id,
+                to: connectionsArray.map(conn => conn.otherNode.id)  // Mapping to ids of connected nodes
+            });
+        }
+    });
+
+    const jsonData = JSON.stringify({ nodes, connections }, null, 2);  // Added null, 2 for pretty-printing JSON
+    const blob = new Blob([jsonData], { type: 'application/json' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'mindmap.html';
+    link.download = 'mindMap.json';
     link.click();
 }
 
 
-function importMindmap() {
-    const fileInput = document.getElementById('importFile');
-    if (fileInput.files.length > 0) {
+function importFromJson() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.onchange = e => {
+        const file = e.target.files[0];
         const reader = new FileReader();
-        reader.onload = function(e) {
-            const mindMapContainer = document.getElementById('mindMap');
-            mindMapContainer.innerHTML = e.target.result;  // Assuming the file contains only the relevant HTML
+        reader.onload = function(event) {
+            const data = JSON.parse(event.target.result);
+            rebuildMindMap(data);
         };
-        reader.readAsText(fileInput.files[0]);
-    } else {
-        alert('Please select a file to import.');
-    }
+        reader.readAsText(file);
+    };
+    input.click();
 }
+
+function rebuildMindMap(data) {
+    const mindMap = document.getElementById('mindMap');
+    mindMap.innerHTML = ''; // Clear existing content
+    const newNodesById = {};
+    nodeConnections.clear(); // Clear existing connections
+
+    // Rebuild nodes
+    data.nodes.forEach(node => {
+        const newNode = createNode(node.title, node.body, node.position.x, node.position.y);
+        newNode.id = node.id; // Ensure the id is maintained for connections
+        mindMap.appendChild(newNode);
+        newNodesById[node.id] = newNode;
+    });
+
+    // Restore connections
+    data.connections.forEach(connection => {
+        const fromNode = newNodesById[connection.from];
+        connection.to.forEach(toId => {
+            const toNode = newNodesById[toId];
+            if (fromNode && toNode) {
+                drawLine(fromNode, toNode);
+            }
+        });
+    });
+}
+
+function createNode(titleText, bodyText, posX, posY) {
+    const node = document.createElement("div");
+    node.className = "node";
+    node.style.position = 'absolute';
+    node.style.left = posX;
+    node.style.top = posY;
+
+    const title = document.createElement("div");
+    title.className = 'title';
+    title.textContent = titleText;
+    node.appendChild(title);
+
+    const body = document.createElement("div");
+    body.className = 'body';
+    body.textContent = bodyText;
+    node.appendChild(body);
+
+    node.draggable = true;
+    node.ondragend = handleDragEnd;
+    node.addEventListener('click', nodeClickHandler); // Reattach event handler
+
+    return node;
+}
+
+
 
 
 
