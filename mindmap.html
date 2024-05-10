@@ -35,6 +35,9 @@
         height: 100%;
         pointer-events: none;
     }
+    .active {
+        border-color: red;
+    }
 </style>
 </head>
 <body>
@@ -42,8 +45,10 @@
         <svg></svg>
     </div>
     <button onclick="addNode()">Add Node</button>
+    <button onclick="toggleConnectionMode()">Toggle Connection Mode</button>
     <script>
         let selectedNode = null;
+        let isConnectionMode = false;
         const svg = document.querySelector('svg');
         const nodeConnections = {};
 
@@ -54,7 +59,6 @@
             newNode.style.top = Math.random() * 300 + 'px';
             newNode.draggable = true;
             newNode.ondragend = handleDragEnd;
-            nodeConnections[newNode] = [];
 
             const newTitle = document.createElement("div");
             newTitle.classList.add("title");
@@ -68,16 +72,26 @@
 
             newNode.appendChild(newTitle);
             newNode.appendChild(newBody);
-            newNode.onclick = function(event) {
+            newNode.addEventListener('click', function(event) {
                 event.stopPropagation();
-                if (selectedNode) {
-                    drawLine(selectedNode, this);
-                    selectedNode = null;
-                } else {
-                    selectedNode = this;
+                if (isConnectionMode) {
+                    if (selectedNode && selectedNode !== this) {
+                        drawLine(selectedNode, this);
+                        selectedNode.classList.remove('active');
+                        selectedNode = null;
+                    } else {
+                        selectedNode = this;
+                        selectedNode.classList.add('active');
+                    }
                 }
-            };
+            });
             document.getElementById("mindMap").appendChild(newNode);
+            nodeConnections[newNode] = [];
+        }
+
+        function toggleConnectionMode() {
+            isConnectionMode = !isConnectionMode;
+            document.body.style.backgroundColor = isConnectionMode ? '#ffcccc' : '#ffffff';  // Optional: change background color to indicate mode
         }
 
         function handleDragEnd(event) {
@@ -91,8 +105,8 @@
             updateLineCoordinates(line, from, to);
             line.setAttribute('stroke', 'black');
             svg.appendChild(line);
-            nodeConnections[from].push({line: line, to: to});
-            nodeConnections[to].push({line: line, from: from});
+            nodeConnections[from].push({line: line, otherNode: to});
+            nodeConnections[to].push({line: line, otherNode: from});
         }
 
         function updateLineCoordinates(line, from, to) {
@@ -109,7 +123,7 @@
         function updateLines(node) {
             const connections = nodeConnections[node];
             connections.forEach(connection => {
-                updateLineCoordinates(connection.line, node, connection.to);
+                updateLineCoordinates(connection.line, node, connection.otherNode);
             });
         }
     </script>
