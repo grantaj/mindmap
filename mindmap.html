@@ -7,6 +7,8 @@
     <style>
         .node {
             border: 2px solid #555;
+            z-index: 2;
+            /* Higher z-index so nodes appear above lines */
             padding: 10px;
             margin: 5px;
             display: inline-block;
@@ -35,6 +37,7 @@
 
         svg {
             position: absolute;
+            z-index: 1;
             top: 0;
             left: 0;
             width: 100%;
@@ -81,29 +84,7 @@
         const mindMap = document.getElementById('mindMap');
 
         function addNode() {
-            const newNode = document.createElement("div");
-            newNode.classList.add("node");
-            newNode.id = "node_" + Date.now();  // Example ID based on timestamp
-            newNode.style.left = Math.random() * (mindMap.clientWidth - 100) + 'px';
-            newNode.style.top = Math.random() * (mindMap.clientHeight - 50) + 'px';
-            newNode.draggable = true;
-            newNode.ondragend = handleDragEnd;
-
-            const newTitle = document.createElement("div");
-            newTitle.classList.add("title");
-            newTitle.contentEditable = true;
-            newTitle.textContent = "New Title";
-
-            const newBody = document.createElement("div");
-            newBody.classList.add("body");
-            newBody.contentEditable = true;
-            newBody.textContent = "New Body";
-
-            newNode.appendChild(newTitle);
-            newNode.appendChild(newBody);
-            newNode.addEventListener('click', nodeClickHandler);
-            mindMap.appendChild(newNode);
-            nodeConnections.set(newNode, []);
+            newNode = createNode("New Title", "New Body", Math.random() * (mindMap.clientWidth - 100) + "px", Math.random() * (mindMap.clientHeight - 50) + "px", "node_" + Date.now())
         }
 
         function nodeClickHandler(event) {
@@ -134,6 +115,9 @@
 
         function drawLine(from, to) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            console.log("Drawing line")
+            console.log(from);
+            console.log(to);
             updateLineCoordinates(line, from, to);
             line.setAttribute('stroke', 'black');
             svg.appendChild(line);
@@ -160,100 +144,116 @@
         }
 
         function exportToJson() {
-    let nodes = [];
-    document.querySelectorAll('.node').forEach(node => {
-        nodes.push({
-            id: node.id,
-            title: node.querySelector('.title').textContent,
-            body: node.querySelector('.body').textContent,
-            position: { x: node.style.left, y: node.style.top }
-        });
-    });
+            let nodes = [];
+            document.querySelectorAll('.node').forEach(node => {
+                nodes.push({
+                    id: node.id,
+                    title: node.querySelector('.title').textContent,
+                    body: node.querySelector('.body').textContent,
+                    position: { x: node.style.left, y: node.style.top }
+                });
+            });
 
-    let connections = [];
-    nodeConnections.forEach((connectionsArray, node) => {
-        // Ensure 'node' has a valid 'id' and connectionsArray is populated
-        if (node.id && connectionsArray.length) {
-            connections.push({
-                from: node.id,
-                to: connectionsArray.map(conn => conn.otherNode.id)  // Mapping to ids of connected nodes
+            let connections = [];
+            nodeConnections.forEach((connectionsArray, node) => {
+                // Ensure 'node' has a valid 'id' and connectionsArray is populated
+                if (node.id && connectionsArray.length) {
+                    connections.push({
+                        from: node.id,
+                        to: connectionsArray.map(conn => conn.otherNode.id)  // Mapping to ids of connected nodes
+                    });
+                }
+            });
+
+            const jsonData = JSON.stringify({ nodes, connections }, null, 2);  // Added null, 2 for pretty-printing JSON
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'mindMap.json';
+            link.click();
+        }
+
+
+        function importFromJson() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const data = JSON.parse(event.target.result);
+                    rebuildMindMap(data);
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function rebuildMindMap(data) {
+            const mindMap = document.getElementById('mindMap');
+
+            // Remove all children except the SVG
+            let child = mindMap.firstChild;
+            while (child) {
+                const nextChild = child.nextSibling; // Get the next child before potentially removing the current child
+                if (child.tagName !== 'svg') {
+                    mindMap.removeChild(child);
+                } else {
+                    // Clear SVG contents but keep the element
+                    child.innerHTML = '';
+                }
+                child = nextChild; // Move to the next child
+            }
+
+            //mindMap.innerHTML = ''; // Clear existing content
+            const newNodesById = {};
+            nodeConnections.clear(); // Clear existing connections
+
+            // Rebuild nodes
+            data.nodes.forEach(node => {
+                const newNode = createNode(node.title, node.body, node.position.x, node.position.y, node.id);
+                newNodesById[node.id] = newNode;
+            });
+
+            // Restore connections
+            data.connections.forEach(connection => {
+                const fromNode = newNodesById[connection.from];
+                connection.to.forEach(toId => {
+                    const toNode = newNodesById[toId];
+                    if (fromNode && toNode) {
+                        drawLine(fromNode, toNode);
+                    }
+                });
             });
         }
-    });
 
-    const jsonData = JSON.stringify({ nodes, connections }, null, 2);  // Added null, 2 for pretty-printing JSON
-    const blob = new Blob([jsonData], { type: 'application/json' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'mindMap.json';
-    link.click();
-}
+        function createNode(titleText, bodyText, posX, posY, id) {
+            const node = document.createElement("div");
+            node.classList.add("node");
+            node.style.position = 'absolute';
+            node.style.left = posX;
+            node.style.top = posY;
 
+            const title = document.createElement("div");
+            title.className = 'title';
+            title.contentEditable = true;
+            title.textContent = titleText;
+            node.appendChild(title);
 
-function importFromJson() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.onchange = e => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const data = JSON.parse(event.target.result);
-            rebuildMindMap(data);
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
+            const body = document.createElement("div");
+            body.className = 'body';
+            body.contentEditable = true;
+            body.textContent = bodyText;
+            node.appendChild(body);
 
-function rebuildMindMap(data) {
-    const mindMap = document.getElementById('mindMap');
-    mindMap.innerHTML = ''; // Clear existing content
-    const newNodesById = {};
-    nodeConnections.clear(); // Clear existing connections
-
-    // Rebuild nodes
-    data.nodes.forEach(node => {
-        const newNode = createNode(node.title, node.body, node.position.x, node.position.y);
-        newNode.id = node.id; // Ensure the id is maintained for connections
-        mindMap.appendChild(newNode);
-        newNodesById[node.id] = newNode;
-    });
-
-    // Restore connections
-    data.connections.forEach(connection => {
-        const fromNode = newNodesById[connection.from];
-        connection.to.forEach(toId => {
-            const toNode = newNodesById[toId];
-            if (fromNode && toNode) {
-                drawLine(fromNode, toNode);
-            }
-        });
-    });
-}
-
-function createNode(titleText, bodyText, posX, posY) {
-    const node = document.createElement("div");
-    node.className = "node";
-    node.style.position = 'absolute';
-    node.style.left = posX;
-    node.style.top = posY;
-
-    const title = document.createElement("div");
-    title.className = 'title';
-    title.textContent = titleText;
-    node.appendChild(title);
-
-    const body = document.createElement("div");
-    body.className = 'body';
-    body.textContent = bodyText;
-    node.appendChild(body);
-
-    node.draggable = true;
-    node.ondragend = handleDragEnd;
-    node.addEventListener('click', nodeClickHandler); // Reattach event handler
-
-    return node;
-}
+            node.draggable = true;
+            node.ondragend = handleDragEnd;
+            node.addEventListener('click', nodeClickHandler); // Reattach event handler
+            node.id = id;
+            nodeConnections.set(node, []);
+            mindMap.appendChild(node);
+            return node;
+        }
 
 
 
