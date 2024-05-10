@@ -23,7 +23,7 @@
     }
     #mindMap {
         position: relative;
-        height: 80vh; /* Adjusted height */
+        height: 80vh;
         width: 100%;
         background: #EEE;
         overflow: hidden;
@@ -59,6 +59,7 @@
     <div id="controls">
         <button onclick="addNode()">Add Node</button>
         <button onclick="toggleConnectionMode()">Toggle Connection Mode</button>
+        <button onclick="exportMindMap()">Export Mind Map</button>
     </div>
     <script>
         let selectedNode = null;
@@ -71,8 +72,8 @@
         function addNode() {
             const newNode = document.createElement("div");
             newNode.classList.add("node");
-            newNode.style.left = Math.random() * (mindMap.clientWidth - 100) + 'px'; // Adjusted to stay within mindMap area
-            newNode.style.top = Math.random() * (mindMap.clientHeight - 50) + 'px'; // Adjusted to stay within mindMap area
+            newNode.style.left = Math.random() * (mindMap.clientWidth - 100) + 'px';
+            newNode.style.top = Math.random() * (mindMap.clientHeight - 50) + 'px';
             newNode.draggable = true;
             newNode.ondragend = handleDragEnd;
 
@@ -88,32 +89,29 @@
 
             newNode.appendChild(newTitle);
             newNode.appendChild(newBody);
-            newNode.addEventListener('click', function(event) {
-                event.stopPropagation();
-                if (isConnectionMode && selectedNode) {
-                    if (selectedNode !== this) {
-                        drawLine(selectedNode, this);
-                        selectedNode.classList.remove('active');
-                        selectedNode = null;
-                    }
-                } else if (isConnectionMode) {
-                    selectedNode = this;
-                    selectedNode.classList.add('active');
-                }
-            });
+            newNode.addEventListener('click', nodeClickHandler);
             mindMap.appendChild(newNode);
             nodeConnections.set(newNode, []);
         }
 
+        function nodeClickHandler(event) {
+            event.stopPropagation();
+            if (isConnectionMode && selectedNode) {
+                if (selectedNode !== this) {
+                    drawLine(selectedNode, this);
+                    selectedNode.classList.remove('active');
+                    selectedNode = null;
+                }
+            } else if (isConnectionMode) {
+                selectedNode = this;
+                selectedNode.classList.add('active');
+            }
+        }
+
         function toggleConnectionMode() {
             isConnectionMode = !isConnectionMode;
-            if (isConnectionMode) {
-                statusLine.textContent = 'Connection Mode';
-                statusLine.style.backgroundColor = '#ffcccc';
-            } else {
-                statusLine.textContent = 'Node Edit Mode';
-                statusLine.style.backgroundColor = '#f0f0f0';
-            }
+            statusLine.textContent = isConnectionMode ? 'Connection Mode' : 'Node Edit Mode';
+            statusLine.style.backgroundColor = isConnectionMode ? '#ffcccc' : '#f0f0f0';
         }
 
         function handleDragEnd(event) {
@@ -148,6 +146,72 @@
                 updateLineCoordinates(connection.line, node, connection.otherNode);
             });
         }
+
+        function exportMindMap() {
+    // HTML header with embedded CSS for the exported file
+    const header = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exported Mind Map</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .node {
+            border: 2px solid #555;
+            padding: 10px;
+            margin: 5px;
+            display: inline-block;
+            background-color: #f9f9f9;
+            position: absolute;
+        }
+        .title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .body {
+            font-size: 0.9em;
+            min-height: 50px;
+        }
+        #mindMap {
+            position: relative;
+            height: 100vh;
+            width: 100%;
+            background: #EEE;
+        }
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>`;
+    const footer = `</body></html>`;
+
+    // Cloning the SVG and mind map contents
+    const svgClone = svg.cloneNode(true);
+    const nodesClone = document.createElement("div");
+    nodesClone.id = "mindMap";
+    Array.from(mindMap.querySelectorAll('.node')).forEach(node => {
+        const clonedNode = node.cloneNode(true);
+        clonedNode.removeAttribute('draggable');
+        clonedNode.removeAttribute('contenteditable');
+        nodesClone.appendChild(clonedNode);
+    });
+
+    // Concatenating the full HTML for export
+    const fullHtml = header + nodesClone.outerHTML + svgClone.outerHTML + footer;
+    const blob = new Blob([fullHtml], {type: 'text/html'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'mindmap.html';
+    link.click();
+}
+
+
     </script>
 </body>
 </html>
