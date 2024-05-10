@@ -23,9 +23,10 @@
     }
     #mindMap {
         position: relative;
-        height: 500px;
+        height: 80vh; /* Adjusted height */
         width: 100%;
         background: #EEE;
+        overflow: hidden;
     }
     svg {
         position: absolute;
@@ -38,25 +39,40 @@
     .active {
         border-color: red;
     }
+    #statusLine {
+        color: #333;
+        padding: 10px;
+        text-align: center;
+        background-color: #f0f0f0;
+    }
+    #controls {
+        text-align: center;
+        padding: 10px;
+    }
 </style>
 </head>
 <body>
+    <div id="statusLine">Node Edit Mode</div>
     <div id="mindMap">
         <svg></svg>
     </div>
-    <button onclick="addNode()">Add Node</button>
-    <button onclick="toggleConnectionMode()">Toggle Connection Mode</button>
+    <div id="controls">
+        <button onclick="addNode()">Add Node</button>
+        <button onclick="toggleConnectionMode()">Toggle Connection Mode</button>
+    </div>
     <script>
         let selectedNode = null;
         let isConnectionMode = false;
         const svg = document.querySelector('svg');
         const nodeConnections = new Map();
+        const statusLine = document.getElementById('statusLine');
+        const mindMap = document.getElementById('mindMap');
 
         function addNode() {
             const newNode = document.createElement("div");
             newNode.classList.add("node");
-            newNode.style.left = Math.random() * 500 + 'px';
-            newNode.style.top = Math.random() * 300 + 'px';
+            newNode.style.left = Math.random() * (mindMap.clientWidth - 100) + 'px'; // Adjusted to stay within mindMap area
+            newNode.style.top = Math.random() * (mindMap.clientHeight - 50) + 'px'; // Adjusted to stay within mindMap area
             newNode.draggable = true;
             newNode.ondragend = handleDragEnd;
 
@@ -74,29 +90,35 @@
             newNode.appendChild(newBody);
             newNode.addEventListener('click', function(event) {
                 event.stopPropagation();
-                if (isConnectionMode) {
-                    if (selectedNode && selectedNode !== this) {
+                if (isConnectionMode && selectedNode) {
+                    if (selectedNode !== this) {
                         drawLine(selectedNode, this);
                         selectedNode.classList.remove('active');
                         selectedNode = null;
-                    } else {
-                        selectedNode = this;
-                        selectedNode.classList.add('active');
                     }
+                } else if (isConnectionMode) {
+                    selectedNode = this;
+                    selectedNode.classList.add('active');
                 }
             });
-            document.getElementById("mindMap").appendChild(newNode);
+            mindMap.appendChild(newNode);
             nodeConnections.set(newNode, []);
         }
 
         function toggleConnectionMode() {
             isConnectionMode = !isConnectionMode;
-            document.body.style.backgroundColor = isConnectionMode ? '#ffcccc' : '#ffffff';  // Optional: change background color to indicate mode
+            if (isConnectionMode) {
+                statusLine.textContent = 'Connection Mode';
+                statusLine.style.backgroundColor = '#ffcccc';
+            } else {
+                statusLine.textContent = 'Node Edit Mode';
+                statusLine.style.backgroundColor = '#f0f0f0';
+            }
         }
 
         function handleDragEnd(event) {
-            this.style.left = event.pageX + 'px';
-            this.style.top = event.pageY + 'px';
+            this.style.left = event.pageX - mindMap.offsetLeft + 'px';
+            this.style.top = event.pageY - mindMap.offsetTop + 'px';
             updateLines(this);
         }
 
@@ -123,11 +145,7 @@
         function updateLines(node) {
             const connections = nodeConnections.get(node);
             connections.forEach(connection => {
-                if (connection.otherNode === node) {
-                    updateLineCoordinates(connection.line, connection.otherNode, node);
-                } else {
-                    updateLineCoordinates(connection.line, node, connection.otherNode);
-                }
+                updateLineCoordinates(connection.line, node, connection.otherNode);
             });
         }
     </script>
