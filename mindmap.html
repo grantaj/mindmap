@@ -132,9 +132,36 @@
         }
 
         #controls {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
             background-color: white;
-            padding: 20px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .button-group {
+            display: flex;
+        }
+
+        .button-group.right {
+            justify-content: flex-end;
+        }
+
+        .button-group button {
+            margin: 0 10px;
+        }
+
+        .button-group button:first-child {
+            margin-left: 0;
+        }
+
+        .button-group button:last-child {
+            margin-right: 0;
+        }
+
+        .button-group.right {
+            justify-content: flex-end;
         }
 
         button {
@@ -184,10 +211,14 @@
         <svg></svg>
     </div>
     <div id="controls">
-        <button id="add">Add Node Mode</button>
-        <button id="connect">Connection Mode</button>
-        <button onclick="exportToJson()">Export JSON</button>
-        <button onclick="importFromJson()">Import JSON</button>
+        <div class="button-group">
+            <button id="add">Add Node Mode</button>
+            <button id="connect">Connection Mode</button>
+        </div>
+        <div class="button-group right">
+            <button onclick="exportToJson()">Export JSON</button>
+            <button onclick="importFromJson()">Import JSON</button>
+        </div>
     </div>
     <script>
         let selectedNode = null;
