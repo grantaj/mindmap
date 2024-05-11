@@ -203,6 +203,40 @@
                 padding: 8px 16px;
             }
         }
+
+        #helpButton {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            /* Initially set width to 0 */
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            right: 0;
+            background-color: white;
+            overflow-x: hidden;
+            transition: 0.5s;
+            /* Smooth transition for sidebar */
+            padding-top: 60px;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar button {
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+        }
+
+        #closeSidebar {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
     </style>
 </head>
 
@@ -220,6 +254,19 @@
             <button onclick="importFromJson()">Import JSON</button>
         </div>
     </div>
+
+    <button id="helpButton">Help</button>
+    <div id="helpSidebar" class="sidebar">
+        <button id="closeSidebar">Close</button>
+        <h2>User Instructions</h2>
+        <p>Here are some instructions on how to use the application:</p>
+        <ul>
+            <li>Click "Add Node Mode" to add nodes by clicking on the canvas.</li>
+            <li>Click "Connection Mode" to connect two nodes by clicking on them.</li>
+            <li>Use the export and import buttons to manage your mind maps.</li>
+        </ul>
+    </div>
+
     <script>
         let selectedNode = null;
         //let isConnectionMode = false;
@@ -243,6 +290,15 @@
         document.getElementById('connect').addEventListener('click', function () {
             toggleMode('connect');
         });
+
+        document.getElementById('helpButton').addEventListener('click', function () {
+            document.getElementById('helpSidebar').style.width = "250px";  // Set width to show sidebar
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', function () {
+            document.getElementById('helpSidebar').style.width = "0";  // Set width to hide sidebar
+        });
+
 
         mindMap.addEventListener('click', function (event) {
             if (currentMode === 'add') {
