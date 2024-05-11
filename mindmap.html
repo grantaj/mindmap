@@ -126,6 +126,10 @@
             /* Vibrant pink */
         }
 
+        #statusLine.editNodeMode {
+            background-color: var(--primary-color);
+            /* Vibrant pink */
+        }
 
         #controls {
             background-color: white;
@@ -140,7 +144,12 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button.active {
+            background-color: var(--secondary-color);
+            /* Different color when active */
         }
 
         button:hover {
@@ -171,19 +180,19 @@
 </head>
 
 <body>
-    <div id="statusLine">Node Edit Mode</div>
     <div id="mindMap">
         <svg></svg>
     </div>
     <div id="controls">
-        <button onclick="addNode()">Add Node</button>
-        <button onclick="toggleConnectionMode()">Connection Mode</button>
+        <button id="add">Add Node Mode</button>
+        <button id="connect">Connection Mode</button>
         <button onclick="exportToJson()">Export JSON</button>
         <button onclick="importFromJson()">Import JSON</button>
     </div>
     <script>
         let selectedNode = null;
-        let isConnectionMode = false;
+        //let isConnectionMode = false;
+        let currentMode = 'edit';  // Possible values: 'add', 'connect', 'edit'
 
         const svg = document.querySelector('svg');
         const nodeConnections = new Map();
@@ -191,42 +200,62 @@
         const mindMap = document.getElementById('mindMap');
 
         document.addEventListener('DOMContentLoaded', function () {
-            statusLine.textContent = 'Add Node Mode';
-            statusLine.className = 'addNodeMode'; // Set default mode on page load
+            toggleMode('edit');
+            //statusLine.textContent = 'Edit Node Mode';
+            //statusLine.className = 'editNodeMode'; // Set default mode on page load
         });
 
-        function addNode() {
-            newNode = createNode("New Title", "New Body", Math.random() * (mindMap.clientWidth - 100) + "px", Math.random() * (mindMap.clientHeight - 50) + "px", "node_" + Date.now())
-        }
+        document.getElementById('add').addEventListener('click', function () {
+            toggleMode('add');
+        });
+
+        document.getElementById('connect').addEventListener('click', function () {
+            toggleMode('connect');
+        });
+
+        mindMap.addEventListener('click', function (event) {
+            if (currentMode === 'add') {
+                const x = event.offsetX;
+                const y = event.offsetY;
+                createNode("Title", "Body", x + "px", y + "px", "node_" + Date.now());
+            }
+        });
 
         function nodeClickHandler(event) {
             event.stopPropagation();
-            if (isConnectionMode && selectedNode) {
+            if (currentMode === 'connect' && selectedNode) {
                 if (selectedNode !== this) {
                     drawLine(selectedNode, this);
                     selectedNode.classList.remove('active');
                     selectedNode = null;
                 }
-            } else if (isConnectionMode) {
+            } else if (currentMode === 'connect') {
                 selectedNode = this;
                 selectedNode.classList.add('active');
             }
         }
 
-        function toggleConnectionMode() {
-            isConnectionMode = !isConnectionMode;
-            if (isConnectionMode) {
-                statusLine.textContent = 'Connection Mode';
-                statusLine.className = 'connectionMode'; // Apply connection mode class
+        function toggleMode(newMode) {
+            const previouslyActive = document.querySelector('button.active');
+            if (previouslyActive) {
+                previouslyActive.classList.remove('active');
+            }
+
+            if (currentMode === newMode) {
+                currentMode = 'edit';  // Deactivate current mode if it's re-toggled
             } else {
-                statusLine.textContent = 'Add Node Mode';
-                statusLine.className = 'addNodeMode'; // Apply add node mode class
-                if (selectedNode) {
-                    selectedNode.classList.remove('active');
-                    selectedNode = null;
+                currentMode = newMode;
+                const modeButton = document.getElementById(newMode);
+                modeButton.classList.add('active'); // Set the button as active
+                if (newMode === 'add') {
+                    if (selectedNode) {
+                        selectedNode.classList.remove('active');
+                        selectedNode = null;
+                    }
                 }
             }
         }
+
 
         function handleDragEnd(event) {
             this.style.left = event.pageX - mindMap.offsetLeft + 'px';
