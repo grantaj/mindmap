@@ -222,14 +222,48 @@
             overflow-x: hidden;
             transition: 0.5s;
             /* Smooth transition for sidebar */
-            padding-top: 60px;
+            padding-top: 20px;
             box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+            font-size: 0.9em;
+            /* Smaller font size */
+            color: #333;
+            /* Dark grey for better readability */
+        }
+
+        .sidebar h2 {
+            margin-left: 20px;
+            margin-right: 20px;
+            color: var(--primary-color);
+            /* Use primary color for headings */
+        }
+
+        .sidebar p,
+        .sidebar ul {
+            margin-left: 20px;
+            margin-right: 20px;
+            text-align: justify;
+        }
+
+        .sidebar ul {
+            padding-left: 20px;
+            /* Indent list items */
+        }
+
+        .sidebar p,
+        .sidebar ul {
+            line-height: 1.5;
+            /* Improves readability */
         }
 
         .sidebar button {
-            padding: 10px;
-            cursor: pointer;
+            background-color: #f0f0f0;
+            border-radius: 5px;
             border: none;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+            font-size: 0.8em;
+            color: var(--secondary-color);
+            /* Adds a color accent */
         }
 
         #closeSidebar {
@@ -258,12 +292,13 @@
     <button id="helpButton">Help</button>
     <div id="helpSidebar" class="sidebar">
         <button id="closeSidebar">Close</button>
-        <h2>User Instructions</h2>
-        <p>Here are some instructions on how to use the application:</p>
+        <h2>Instructions</h2>
+        <p>This app lets you build mind maps:</p>
         <ul>
-            <li>Click "Add Node Mode" to add nodes by clicking on the canvas.</li>
-            <li>Click "Connection Mode" to connect two nodes by clicking on them.</li>
-            <li>Use the export and import buttons to manage your mind maps.</li>
+            <li>Click "Add" to enter Add Node Mode. Add nodes by clicking on the canvas.</li>
+            <li>Click "Connect" to enter Connect Mode. Connect two nodes by clicking on them.</li>
+            <li>Clicking again on the active button enters Edit Mode. Drag nodes to move, click on title or body text to edit.</li>
+            <li>Export and import buttons allow you to save and load your mind maps.</li>
         </ul>
     </div>
 
