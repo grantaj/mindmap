@@ -34,6 +34,12 @@
             cursor: pointer;
             position: absolute;
             transition: transform 0.1s;
+            max-width: 250px;
+            /* Sets a maximum width for each node */
+            word-wrap: break-word;
+            /* Ensures text wraps to avoid overflow */
+            box-sizing: border-box;
+            /* Ensures padding and border are included in width */
         }
 
         .node:active {
@@ -41,9 +47,21 @@
             /* Slight press effect */
         }
 
+        .node.active {
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            /* Example: gold to orange gradient */
+            transform: scale(1.01);
+            /* Slightly larger to highlight */
+        }
+
+
         .title,
         .body {
             padding: 4px;
+            display: block;
+            /* Ensures title and body take full width of node */
+            overflow-wrap: break-word;
+            /* Alternative to word-wrap for more control */
         }
 
         .body {
@@ -139,6 +157,16 @@
             stroke: var(--secondary-color);
             stroke-width: 3;
         }
+
+        @media (max-width: 768px) {
+            .node {
+                padding: 8px;
+            }
+
+            button {
+                padding: 8px 16px;
+            }
+        }
     </style>
 </head>
 
@@ -166,7 +194,7 @@
             statusLine.textContent = 'Add Node Mode';
             statusLine.className = 'addNodeMode'; // Set default mode on page load
         });
-        
+
         function addNode() {
             newNode = createNode("New Title", "New Body", Math.random() * (mindMap.clientWidth - 100) + "px", Math.random() * (mindMap.clientHeight - 50) + "px", "node_" + Date.now())
         }
@@ -193,6 +221,10 @@
             } else {
                 statusLine.textContent = 'Add Node Mode';
                 statusLine.className = 'addNodeMode'; // Apply add node mode class
+                if (selectedNode) {
+                    selectedNode.classList.remove('active');
+                    selectedNode = null;
+                }
             }
         }
 
