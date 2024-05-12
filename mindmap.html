@@ -18,8 +18,9 @@
             <button id="delete">Delete</button>
         </div>
         <div class="button-group right">
-            <button onclick="exportToJson()">Export JSON</button>
-            <button onclick="importFromJson()">Import JSON</button>
+            <button onclick="exportToPDF()">Export PDF</button>
+            <button onclick="exportToJson()">Save JSON</button>
+            <button onclick="importFromJson()">Load JSON</button>
         </div>
     </div>
 
@@ -34,9 +35,13 @@
             <li>Click "Delete" to enter Delete Node Mode. Delete nodes by clicking on them.</li>
             <li>Clicking again on the active button enters Edit Mode. Drag nodes to move, click on title or body text to
                 edit.</li>
-            <li>Export and import buttons allow you to save and load your mind maps.</li>
+            <li>"Export PDF" button saves the mindmap as a PDF for easy sharing and printing.</li>
+            <li>"Save JSON" and "Load JSON" buttons allow you to save and load your mind maps as structured JSON data.</li>
         </ul>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
 
     <script>
         let selectedNode = null;
@@ -239,6 +244,21 @@
                 });
             });
         }
+
+        function exportToPDF() {
+            const element = document.getElementById('mindMap'); // Adjust this to your specific element
+            html2canvas(element).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
+                });
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                pdf.save('mind-map.pdf');
+            });
+        }
+
 
         function createNode(titleText, bodyText, posX, posY, id) {
             const node = document.createElement("div");
