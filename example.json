@@ -1,0 +1,89 @@
+{
+    "nodes": [
+        {
+            "id": "node1",
+            "title": "Large Language Models (LLMs)",
+            "body": "LLMs are advanced AI systems designed to understand and generate human-like text by analyzing vast amounts of written data.",
+            "position": { "x": "450px", "y": "100px" }
+        },
+        {
+            "id": "node2",
+            "title": "Data Analysis",
+            "body": "LLMs analyze written content from books, articles, websites, and more to learn how humans use language.",
+            "position": { "x": "100px", "y": "200px" }
+        },
+        {
+            "id": "node3",
+            "title": "Pattern Recognition",
+            "body": "They detect patterns in data to understand grammar, context, and nuances in language.",
+            "position": { "x": "800px", "y": "200px" }
+        },
+        {
+            "id": "node4",
+            "title": "Knowledge Representation",
+            "body": "LLMs represent knowledge by organizing learned information in complex models, similar to a human mind organizing thoughts.",
+            "position": { "x": "450px", "y": "350px" }
+        },
+        {
+            "id": "node5",
+            "title": "Application",
+            "body": "Used in chatbots, translation services, and content creation, helping bridge communication gaps globally.",
+            "position": { "x": "450px", "y": "500px" }
+        },
+        {
+            "id": "ref1",
+            "title": "Overview of LLMs",
+            "body": "OpenAI Blog, 2021. [Understanding LLMs](https://www.openai.com/blog/understanding-llms)",
+            "position": { "x": "150px", "y": "50px" }
+        },
+        {
+            "id": "ref2",
+            "title": "Deep Learning for Language Processing",
+            "body": "Journal of Artificial Intelligence Research, Vaswani et al., 2017. 'Attention Is All You Need'. [Read here](https://www.jair.org/index.php/jair/article/view/11192)",
+            "position": { "x": "750px", "y": "50px" }
+        },
+        {
+            "id": "ref3",
+            "title": "Real-World Applications of AI",
+            "body": "Medium, 2020. 'Exploring Practical Uses of AI'. [Access article](https://medium.com/topic/technology)",
+            "position": { "x": "450px", "y": "650px" }
+        }
+    ],
+    "connections": [
+        {
+            "from": "node1",
+            "to": ["node2", "node3", "node4", "ref1"]
+        },
+        {
+            "from": "node2",
+            "to": ["node1", "ref1"]
+        },
+        {
+            "from": "node3",
+            "to": ["node1", "ref2"]
+        },
+        {
+            "from": "node4",
+            "to": ["node1", "node5", "ref2"]
+        },
+        {
+            "from": "node5",
+            "to": ["node4", "ref3"]
+        },
+        {
+            "from": "ref1",
+            "to": ["node1", "node2"]
+        },
+        {
+            "from": "ref2",
+            "to": ["node3", "node4"]
+        },
+        {
+            "from": "ref3",
+            "to": ["node5"]
+        }
+    ]
+}
+
+
+
