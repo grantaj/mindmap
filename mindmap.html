@@ -139,6 +139,11 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        #delete.active {
+            background-color: #FF6347;
+            /* Tomato red for delete mode */
+            color: white;
+        }
 
         .button-group {
             display: flex;
@@ -280,8 +285,9 @@
     </div>
     <div id="controls">
         <div class="button-group">
-            <button id="add">Add Node Mode</button>
-            <button id="connect">Connection Mode</button>
+            <button id="add">Add</button>
+            <button id="connect">Connect</button>
+            <button id="delete">Delete</button>
         </div>
         <div class="button-group right">
             <button onclick="exportToJson()">Export JSON</button>
@@ -297,7 +303,9 @@
         <ul>
             <li>Click "Add" to enter Add Node Mode. Add nodes by clicking on the canvas.</li>
             <li>Click "Connect" to enter Connect Mode. Connect two nodes by clicking on them.</li>
-            <li>Clicking again on the active button enters Edit Mode. Drag nodes to move, click on title or body text to edit.</li>
+            <li>Click "Delete" to enter Delete Node Mode. Delete nodes by clicking on them.</li>
+            <li>Clicking again on the active button enters Edit Mode. Drag nodes to move, click on title or body text to
+                edit.</li>
             <li>Export and import buttons allow you to save and load your mind maps.</li>
         </ul>
     </div>
@@ -326,6 +334,10 @@
             toggleMode('connect');
         });
 
+        document.getElementById('delete').addEventListener('click', function () {
+            toggleMode('delete');
+        });
+
         document.getElementById('helpButton').addEventListener('click', function () {
             document.getElementById('helpSidebar').style.width = "250px";  // Set width to show sidebar
         });
@@ -345,7 +357,9 @@
 
         function nodeClickHandler(event) {
             event.stopPropagation();
-            if (currentMode === 'connect' && selectedNode) {
+            if (currentMode === 'delete') {
+                deleteNode(event.target);
+            } else if (currentMode === 'connect' && selectedNode) {
                 if (selectedNode !== this) {
                     drawLine(selectedNode, this);
                     selectedNode.classList.remove('active');
@@ -527,7 +541,23 @@
             return node;
         }
 
+        function deleteNode(node) {
+            // Remove connections first
+            if (nodeConnections.has(node)) {
+                nodeConnections.get(node).forEach(conn => {
+                    conn.line.parentNode.removeChild(conn.line); // Remove the line from SVG
+                });
+                nodeConnections.delete(node); // Remove node entry from map
+            }
 
+            // Also remove connections from other connected nodes
+            nodeConnections.forEach((connections, otherNode) => {
+                nodeConnections.set(otherNode, connections.filter(conn => conn.otherNode !== node));
+            });
+
+            // Finally, remove the node itself
+            node.parentNode.removeChild(node);
+        }
 
 
 
