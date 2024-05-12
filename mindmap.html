@@ -146,6 +146,7 @@
         line.setAttribute('stroke', 'black');
         svg.appendChild(line);
         nodeConnections.get(from).push({ line: line, otherNode: to });
+        nodeConnections.get(to).push({ line: line, otherNode: from });
     }
 
     function updateLineCoordinates(line, from, to) {
