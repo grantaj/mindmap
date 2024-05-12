@@ -1,0 +1,272 @@
+
+:root {
+    --primary-color: #5B84B1FF;
+    /* Cool blue */
+    --secondary-color: #FC766AFF;
+    /* Vibrant pink */
+    --background-color: #f0f4f8;
+    /* Soft grey-blue */
+    --text-color: #333;
+    /* Dark grey for text */
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+
+.node {
+    z-index: 2;
+    border: none;
+    padding: 10px;
+    margin: 5px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    position: absolute;
+    transition: transform 0.1s;
+    max-width: 250px;
+    /* Sets a maximum width for each node */
+    word-wrap: break-word;
+    /* Ensures text wraps to avoid overflow */
+    box-sizing: border-box;
+    /* Ensures padding and border are included in width */
+}
+
+.node:active {
+    transform: scale(0.98);
+    /* Slight press effect */
+}
+
+.node.active {
+    background: linear-gradient(145deg, #FFD700, #FFA500);
+    /* Example: gold to orange gradient */
+    transform: scale(1.01);
+    /* Slightly larger to highlight */
+}
+
+
+.title,
+.body {
+    padding: 4px;
+    display: block;
+    /* Ensures title and body take full width of node */
+    overflow-wrap: break-word;
+    /* Alternative to word-wrap for more control */
+}
+
+.body {
+    font-size: 0.9em;
+    min-height: 50px;
+}
+
+.body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+}
+
+.title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+#mindMap {
+    position: relative;
+    height: 80vh;
+    width: 100%;
+    background: #EEE;
+    overflow: hidden;
+}
+
+svg {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.active {
+    border-color: red;
+}
+
+
+#statusLine {
+    color: #fff;
+    /* Change text color to white for better contrast */
+    padding: 10px;
+    text-align: center;
+    transition: background-color 0.3s ease-in-out;
+    /* Smooth transition for background color change */
+    border-radius: 5px;
+    /* Optional: rounded corners for a modern look */
+}
+
+/* Default status bar color when in Add Node mode */
+#statusLine.addNodeMode {
+    background-color: var(--primary-color);
+    /* Cool blue */
+}
+
+/* Different color when in Connection Mode */
+#statusLine.connectionMode {
+    background-color: var(--secondary-color);
+    /* Vibrant pink */
+}
+
+#statusLine.editNodeMode {
+    background-color: var(--primary-color);
+    /* Vibrant pink */
+}
+
+#controls {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#delete.active {
+    background-color: #FF6347;
+    /* Tomato red for delete mode */
+    color: white;
+}
+
+.button-group {
+    display: flex;
+}
+
+.button-group.right {
+    justify-content: flex-end;
+}
+
+.button-group button {
+    margin: 0 10px;
+}
+
+.button-group button:first-child {
+    margin-left: 0;
+}
+
+.button-group button:last-child {
+    margin-right: 0;
+}
+
+.button-group.right {
+    justify-content: flex-end;
+}
+
+button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+button.active {
+    background-color: var(--secondary-color);
+    /* Different color when active */
+}
+
+button:hover {
+    background-color: var(--secondary-color);
+}
+
+line {
+    stroke: var(--primary-color);
+    stroke-width: 2;
+    transition: stroke-width 0.3s, stroke 0.3s;
+}
+
+line:hover {
+    stroke: var(--secondary-color);
+    stroke-width: 3;
+}
+
+@media (max-width: 768px) {
+    .node {
+        padding: 8px;
+    }
+
+    button {
+        padding: 8px 16px;
+    }
+}
+
+#helpButton {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+}
+
+.sidebar {
+    height: 100%;
+    width: 0;
+    /* Initially set width to 0 */
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    background-color: white;
+    overflow-x: hidden;
+    transition: 0.5s;
+    /* Smooth transition for sidebar */
+    padding-top: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+    font-size: 0.9em;
+    /* Smaller font size */
+    color: #333;
+    /* Dark grey for better readability */
+}
+
+.sidebar h2 {
+    margin-left: 20px;
+    margin-right: 20px;
+    color: var(--primary-color);
+    /* Use primary color for headings */
+}
+
+.sidebar p,
+.sidebar ul {
+    margin-left: 20px;
+    margin-right: 20px;
+    text-align: justify;
+}
+
+.sidebar ul {
+    padding-left: 20px;
+    /* Indent list items */
+}
+
+.sidebar p,
+.sidebar ul {
+    line-height: 1.5;
+    /* Improves readability */
+}
+
+.sidebar button {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    border: none;
+    padding: 8px 16px;
+    margin-bottom: 20px;
+    font-size: 0.8em;
+    color: var(--secondary-color);
+    /* Adds a color accent */
+}
+
+#closeSidebar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
