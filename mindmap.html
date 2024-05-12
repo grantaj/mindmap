@@ -53,10 +53,20 @@
     //let isConnectionMode = false;
     let currentMode = 'edit';  // Possible values: 'add', 'connect', 'edit'
 
-    const svg = document.querySelector('svg');
+
     const nodeConnections = new Map();
-    const statusLine = document.getElementById('statusLine');
+
+    const mindMapContainer = document.getElementById('mindMapContainer');
     const mindMap = document.getElementById('mindMap');
+    const svg = document.querySelector('svg');
+
+    let dragging = false;
+    let panning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let offsetX = 0;
+    let offsetY = 0;
+    let scale = 1; // Initial scale
 
     document.addEventListener('DOMContentLoaded', function () {
         toggleMode('edit');
@@ -93,9 +103,6 @@
         }
     });
 
-
-
-
     function nodeClickHandler(event) {
         event.stopPropagation();
         if (currentMode === 'delete') {
@@ -131,13 +138,6 @@
                 }
             }
         }
-    }
-
-
-    function handleDragEnd(event) {
-        this.style.left = event.pageX - mindMap.offsetLeft + 'px';
-        this.style.top = event.pageY - mindMap.offsetTop + 'px';
-        updateLines(this);
     }
 
     function drawLine(from, to) {
@@ -311,7 +311,8 @@
         node.parentNode.removeChild(node);
     }
 
-    let scale = 1; // Initial scale
+
+    // Zoom & pan
 
     function zoomHandler(event) {
         event.preventDefault();
@@ -327,47 +328,62 @@
         mindMap.style.transform = `scale(${scale})`;
     }
 
-    let panning = false;
-    let panStartX = 0;
-    let panStartY = 0;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    const mindMapContainer = document.getElementById('mindMapContainer');
-    //const mindMap = document.getElementById('mindMap');
-
-    mindMapContainer.addEventListener('mousedown', function (event) {
-        panning = true;
-        panStartX = event.clientX;
-        panStartY = event.clientY;
-    });
-
-    window.addEventListener('mouseup', function () {
-        panning = false;
-    });
-
-    mindMapContainer.addEventListener('mousemove', function (event) {
-        if (panning) {
-            const dx = event.clientX - panStartX;
-            const dy = event.clientY - panStartY;
-
-            // Update the offsets with boundaries
-            offsetX = Math.min(Math.max(offsetX + dx, -(mindMap.offsetWidth - mindMapContainer.offsetWidth)), 0);
-            offsetY = Math.min(Math.max(offsetY + dy, -(mindMap.offsetHeight - mindMapContainer.offsetHeight)), 0);
-
-            panStartX = event.clientX;
-            panStartY = event.clientY;
-
-            mindMap.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
-        }
-    });
-
     window.addEventListener('load', () => {
         // Center the mind map initially
         offsetX = -(mindMap.offsetWidth - mindMapContainer.offsetWidth) / 2;
         offsetY = -(mindMap.offsetHeight - mindMapContainer.offsetHeight) / 2;
         mindMap.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
     });
+
+    mindMapContainer.addEventListener('mousedown', function (event) {
+        if (event.target.classList.contains('node')) {
+            // Initiate dragging
+            dragging = true;
+            panning = false;
+            // More node-specific setup here if necessary
+        } else {
+            // Initiate panning
+            panning = true;
+            dragging = false;
+            panStartX = event.clientX;
+            panStartY = event.clientY;
+        }
+    });
+
+    window.addEventListener('mouseup', function (event) {
+        dragging = false;
+        panning = false;
+    });
+
+    mindMapContainer.addEventListener('mousemove', function (event) {
+        if (panning && !dragging) {
+            const dx = event.clientX - panStartX;
+            const dy = event.clientY - panStartY;
+            offsetX += dx;
+            offsetY += dy;
+            panStartX = event.clientX;
+            panStartY = event.clientY;
+            mindMap.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+        }
+    });
+
+    function handleDragEnd(event) {
+        event.preventDefault();
+        event.stopPropagation(); // Prevent triggering panning
+
+        // Calculate the new position considering the current scale and translation
+        let newX = (event.clientX - mindMapContainer.offsetLeft - offsetX) / scale;
+        let newY = (event.clientY - mindMapContainer.offsetTop - offsetY) / scale;
+
+        // Apply the new position to the node style
+        this.style.left = `${newX}px`;
+        this.style.top = `${newY}px`;
+        updateLines(this);
+        dragging = false;
+        panning = false;
+    }
+
+
 </script>
 </body>
 
