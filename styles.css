@@ -1,4 +1,3 @@
-
 :root {
     --primary-color: #5B84B1FF;
     /* Cool blue */
@@ -81,6 +80,39 @@ body {
     background: #EEE;
     overflow: hidden;
 }
+
+
+
+#mindMap {
+    transform-origin: 0 0;
+    /* Ensures zoom originates from top left corner */
+    transition: transform 0.2s;
+    /* Smooth transition for zooming and panning */
+}
+
+#appContainer {
+    width: 100%; /* Ensure the container fills the available width */
+}
+
+#mindMapContainer {
+    width: 100%;
+    height: 80vh; /* Adjust height as needed */
+    overflow: auto; /* Allows scrolling within the container */
+    position: relative; /* Ensures contained positioning */
+}
+
+#mindMap {
+    width: 2000px; /* Larger than the container for panning */
+    height: 2000px;
+    position: relative; /* Needed for correct positioning inside the container */
+}
+
+#controls {
+    width: 100%;
+    text-align: center; /* Center-align the buttons */
+    padding: 10px 0; /* Add some padding for visual spacing */
+}
+
 
 svg {
     position: absolute;
