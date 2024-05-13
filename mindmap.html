@@ -21,6 +21,7 @@
         <button id="add">Add</button>
         <button id="connect">Connect</button>
         <button id="delete">Delete</button>
+        <button id="clearMap">Clear Mind Map</button>
     </div>
     <div class="button-group right">
         <button onclick="exportToPDF()">Export PDF</button>
@@ -37,9 +38,10 @@
     <ul>
         <li>Click "Add" to enter Add Node Mode. Add nodes by clicking on the canvas.</li>
         <li>Click "Connect" to enter Connect Mode. Connect two nodes by clicking on them.</li>
-        <li>Click "Delete" to enter Delete Node Mode. Delete nodes by clicking on them.</li>
+        <li>Click "Delete" to enter Delete Node Mode. Delete nodes by clicking on them. There is no undo!</li>
         <li>Clicking again on the active button enters Edit Mode. Drag nodes to move, click on title or body text to
             edit.</li>
+        <li>Click "Clear Mind Map" to completely erase the map. There is no undo!</li>
         <li>"Export PDF" button saves the mindmap as a PDF for easy sharing and printing.</li>
         <li>"Save JSON" and "Load JSON" buttons allow you to save and load your mind maps as structured JSON data.</li>
     </ul>
@@ -67,6 +69,14 @@
     let offsetX = 0;
     let offsetY = 0;
     let scale = 1; // Initial scale
+
+    window.addEventListener('beforeunload', function (e) {
+        // Cancel the event as permitted by standard.
+        e.preventDefault();
+        // Chrome requires returnValue to be set.
+        e.returnValue = '';
+    });
+
 
     document.addEventListener('DOMContentLoaded', function () {
         toggleMode('edit');
@@ -310,6 +320,31 @@
         // Finally, remove the node itself
         node.parentNode.removeChild(node);
     }
+
+    document.getElementById('clearMap').addEventListener('click', function () {
+        if (confirm('Clear entire mind map?')) {
+            // Assuming 'mindMap' is the div that contains all your nodes and SVG for connections
+            const mindMap = document.getElementById('mindMap');
+            const svg = mindMap.querySelector('svg'); // Assuming connections are drawn in an SVG within mindMap
+
+            // Remove all child nodes and connections
+            while (mindMap.firstChild) {
+                mindMap.removeChild(mindMap.firstChild);
+            }
+
+            // If SVG for connections needs to be retained or cleared differently
+            if (svg) {
+                svg.innerHTML = ''; // Clear all SVG elements but keep the SVG container
+                mindMap.appendChild(svg); // Re-append the cleared SVG if it was removed
+            }
+
+            // Reset data structures if you maintain them
+            if (window.nodeConnections) {
+                window.nodeConnections.clear();
+            }
+        }
+    });
+
 
 
     // Zoom & pan
