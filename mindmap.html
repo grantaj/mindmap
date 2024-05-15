@@ -2,10 +2,300 @@
 <html lang="en">
 
 <head>
-    <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <title>Mind Map Creator</title>
 </head>
+<style>
+    :root {
+        --primary-color: #5B84B1FF;
+        /* Cool blue */
+        --secondary-color: #FC766AFF;
+        /* Vibrant pink */
+        --background-color: #f0f4f8;
+        /* Soft grey-blue */
+        --text-color: #333;
+        /* Dark grey for text */
+    }
+
+    body {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+
+    .node {
+        z-index: 2;
+        border: none;
+        padding: 10px;
+        margin: 5px;
+        background: linear-gradient(145deg, #ffffff, #e6e6e6);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        cursor: pointer;
+        position: absolute;
+        transition: transform 0.1s;
+        max-width: 250px;
+        /* Sets a maximum width for each node */
+        word-wrap: break-word;
+        /* Ensures text wraps to avoid overflow */
+        box-sizing: border-box;
+        /* Ensures padding and border are included in width */
+    }
+
+    .node:active {
+        transform: scale(0.98);
+        /* Slight press effect */
+    }
+
+    .node.active {
+        background: linear-gradient(145deg, #FFD700, #FFA500);
+        /* Example: gold to orange gradient */
+        transform: scale(1.01);
+        /* Slightly larger to highlight */
+    }
+
+
+    .title,
+    .body {
+        padding: 4px;
+        display: block;
+        /* Ensures title and body take full width of node */
+        overflow-wrap: break-word;
+        /* Alternative to word-wrap for more control */
+    }
+
+    .body {
+        font-size: 0.9em;
+        min-height: 50px;
+    }
+
+    .body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+    }
+
+    .title {
+        font-weight: bold;
+        margin-bottom: 5px;
+        font-size: 1.1em;
+    }
+
+    #mindMap {
+        position: relative;
+        height: 80vh;
+        width: 100%;
+        background: #EEE;
+        overflow: hidden;
+    }
+
+
+
+    #mindMap {
+        transform-origin: 0 0;
+        /* Ensures zoom originates from top left corner */
+        transition: transform 0.2s;
+        /* Smooth transition for zooming and panning */
+    }
+
+    #appContainer {
+        width: 100%;
+        /* Ensure the container fills the available width */
+    }
+
+    #mindMapContainer {
+        width: 100%;
+        height: 80vh;
+        /* Adjust height as needed */
+        overflow: auto;
+        /* Allows scrolling within the container */
+        position: relative;
+        /* Ensures contained positioning */
+    }
+
+    #mindMap {
+        width: 2000px;
+        /* Larger than the container for panning */
+        height: 2000px;
+        position: relative;
+        /* Needed for correct positioning inside the container */
+    }
+
+    #controls {
+        width: auto;
+        text-align: center;
+        /* Center-align the buttons */
+        padding: 20px 0;
+        /* Add some padding for visual spacing */
+    }
+
+
+    svg {
+        position: absolute;
+        z-index: 1;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .active {
+        border-color: red;
+    }
+
+    #controls {
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
+        padding: 10px 20px;
+        /* Add horizontal padding */
+        background-color: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #delete.active {
+        background-color: #FF6347;
+        /* Tomato red for delete mode */
+        color: white;
+    }
+
+    .button-group {
+        display: flex;
+    }
+
+    .button-group button {
+        margin: 0 10px;
+    }
+
+    .button-group button:first-child {
+        margin-left: 0;
+    }
+
+    .button-group button:last-child {
+        margin-right: 0;
+    }
+
+    .button-group.right {
+        justify-content: flex-end;
+    }
+
+    .button-group.right button:first-child {
+        margin-left: 0;
+    }
+
+    .button-group.right button:last-child {
+        margin-right: 0px;
+    }
+
+    button {
+        background-color: var(--primary-color);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+    button.active {
+        background-color: var(--secondary-color);
+        /* Different color when active */
+    }
+
+    button:hover {
+        background-color: var(--secondary-color);
+    }
+
+    line {
+        stroke: var(--primary-color);
+        stroke-width: 2;
+        transition: stroke-width 0.3s, stroke 0.3s;
+    }
+
+    line:hover {
+        stroke: var(--secondary-color);
+        stroke-width: 3;
+    }
+
+    @media (max-width: 768px) {
+        .node {
+            padding: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+        }
+    }
+
+    #helpButton {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+    }
+
+    .sidebar {
+        height: 100%;
+        width: 0;
+        /* Initially set width to 0 */
+        position: fixed;
+        z-index: 1;
+        top: 0;
+        right: 0;
+        background-color: white;
+        overflow-x: hidden;
+        transition: 0.5s;
+        /* Smooth transition for sidebar */
+        padding-top: 20px;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
+        font-size: 0.9em;
+        /* Smaller font size */
+        color: #333;
+        /* Dark grey for better readability */
+    }
+
+    .sidebar h2 {
+        margin-left: 20px;
+        margin-right: 20px;
+        color: var(--primary-color);
+        /* Use primary color for headings */
+    }
+
+    .sidebar p,
+    .sidebar ul {
+        margin-left: 20px;
+        margin-right: 20px;
+        text-align: justify;
+    }
+
+    .sidebar ul {
+        padding-left: 20px;
+        /* Indent list items */
+    }
+
+    .sidebar p,
+    .sidebar ul {
+        line-height: 1.5;
+        /* Improves readability */
+    }
+
+    .sidebar button {
+        background-color: #f0f0f0;
+        border-radius: 5px;
+        border: none;
+        padding: 8px 16px;
+        margin-bottom: 20px;
+        font-size: 0.8em;
+        color: var(--secondary-color);
+        /* Adds a color accent */
+    }
+
+    #closeSidebar {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
 
 <body>
     <div id="appContainer">
@@ -67,7 +357,7 @@
         let panStartY = 0;
         let offsetX = 0;
         let offsetY = 0;
-        let scale = 1; 
+        let scale = 1;
 
         window.addEventListener('beforeunload', function (e) {
             // Cancel the event as permitted by standard.
@@ -77,9 +367,8 @@
         });
 
         document.addEventListener('DOMContentLoaded', function () {
+            loadInitialMindMap();
             toggleMode('edit');
-            //statusLine.textContent = 'Edit Node Mode';
-            //statusLine.className = 'editNodeMode'; // Set default mode on page load
         });
 
         document.getElementById('add').addEventListener('click', function () {
@@ -271,7 +560,6 @@
             });
         }
 
-
         function createNode(titleText, bodyText, posX, posY, id) {
             const node = document.createElement("div");
             node.classList.add("node");
@@ -398,7 +686,7 @@
         });
 
         // Drag node
-        
+
         function handleDragEnd(event) {
             event.preventDefault();
             event.stopPropagation(); // Prevent triggering panning
@@ -415,7 +703,405 @@
             panning = false;
         }
 
+        // Initial Mind Map
+        const predefinedMindMap = {
+            "nodes": [
+                {
+                    "id": "node1",
+                    "title": "Mind Map Application Project",
+                    "body": "A comprehensive tool for creating and managing interactive mind maps.",
+                    "position": {
+                        "x": "981.946px",
+                        "y": "43.3761px"
+                    }
+                },
+                {
+                    "id": "node2",
+                    "title": "Development Tools",
+                    "body": "Tools and languages used in the development, including JavaScript, HTML, CSS, and LLMs.",
+                    "position": {
+                        "x": "477.885px",
+                        "y": "151.069px"
+                    }
+                },
+                {
+                    "id": "node14",
+                    "title": "JavaScript",
+                    "body": "The scripting language used to create dynamic content on the web.",
+                    "position": {
+                        "x": "123.398px",
+                        "y": "228.846px"
+                    }
+                },
+                {
+                    "id": "node15",
+                    "title": "HTML & CSS",
+                    "body": "Standard markup and styling languages used for creating and designing web pages.",
+                    "position": {
+                        "x": "124.893px",
+                        "y": "399.36px"
+                    }
+                },
+                {
+                    "id": "node16",
+                    "title": "Large Language Models (LLMs) in Development",
+                    "body": "LLMs, like GPT-3, provide coding assistance, enabling developers with varying levels of expertise to build complex applications.",
+                    "position": {
+                        "x": "471.253px",
+                        "y": "400.371px"
+                    }
+                },
+                {
+                    "id": "node17",
+                    "title": "Reference: LLMs and Coding",
+                    "body": "Medium, 2022. 'How AI is Transforming Software Development'. [Read Article](https://medium.com/topic/technology)",
+                    "position": {
+                        "x": "787.5px",
+                        "y": "257.047px"
+                    }
+                },
+                {
+                    "id": "node3",
+                    "title": "Core Functionalities",
+                    "body": "The essential features and functionalities implemented in the mind map application.",
+                    "position": {
+                        "x": "1079.84px",
+                        "y": "270.933px"
+                    }
+                },
+                {
+                    "id": "node4",
+                    "title": "Advanced Features",
+                    "body": "Enhanced capabilities that improve the utility and efficiency of the mind map application.",
+                    "position": {
+                        "x": "1699.56px",
+                        "y": "183.736px"
+                    }
+                },
+                {
+                    "id": "node5",
+                    "title": "User Interaction",
+                    "body": "Features and design choices that affect how users interact with the application.",
+                    "position": {
+                        "x": "1433.31px",
+                        "y": "670.283px"
+                    }
+                },
+                {
+                    "id": "node6",
+                    "title": "Visual Studio Code",
+                    "body": "IDE used for developing the application, featuring extensions like Live Server.",
+                    "position": {
+                        "x": "87.5001px",
+                        "y": "56.8377px"
+                    }
+                },
+                {
+                    "id": "node7",
+                    "title": "GitHub",
+                    "body": "Used for version control and source code management throughout the project.",
+                    "position": {
+                        "x": "126.389px",
+                        "y": "580.343px"
+                    }
+                },
+                {
+                    "id": "node8",
+                    "title": "Node & Connection Management",
+                    "body": "Methods to add, remove, and manage nodes and connections within the mind map.",
+                    "position": {
+                        "x": "1406.83px",
+                        "y": "462.454px"
+                    }
+                },
+                {
+                    "id": "node9",
+                    "title": "Zoom & Pan",
+                    "body": "Techniques implemented to navigate larger mind maps effectively.",
+                    "position": {
+                        "x": "1067.38px",
+                        "y": "449.997px"
+                    }
+                },
+                {
+                    "id": "node10",
+                    "title": "Persistence & Data Storage",
+                    "body": "Strategies to save and restore the state of the mind map using local storage or server-based solutions.",
+                    "position": {
+                        "x": "1715.46px",
+                        "y": "419.317px"
+                    }
+                },
+                {
+                    "id": "node11",
+                    "title": "Export/Import JSON",
+                    "body": "Functionality that allows users to export their mind map to JSON format and import it back.",
+                    "position": {
+                        "x": "1596.99px",
+                        "y": "838.633px"
+                    }
+                },
+                {
+                    "id": "node12",
+                    "title": "Real-Time Collaboration",
+                    "body": "Potential future feature allowing multiple users to work on the same mind map simultaneously.",
+                    "position": {
+                        "x": "1673.37px",
+                        "y": "1095.83px"
+                    }
+                },
+                {
+                    "id": "node21",
+                    "title": "Data Analysis",
+                    "body": "LLMs analyze written content from books, articles, websites, and more to learn how humans use language.",
+                    "position": {
+                        "x": "371.773px",
+                        "y": "986.719px"
+                    }
+                },
+                {
+                    "id": "node18",
+                    "title": "Pattern Recognition",
+                    "body": "They detect patterns in data to understand grammar, context, and nuances in language.",
+                    "position": {
+                        "x": "641.061px",
+                        "y": "1118.55px"
+                    }
+                },
+                {
+                    "id": "node19",
+                    "title": "Knowledge Representation",
+                    "body": "LLMs represent knowledge by organizing learned information in complex models, similar to a human mind organizing thoughts.",
+                    "position": {
+                        "x": "925.108px",
+                        "y": "605.77px"
+                    }
+                },
+                {
+                    "id": "node20",
+                    "title": "Application",
+                    "body": "Used in chatbots, translation services, and content creation, helping bridge communication gaps globally.",
+                    "position": {
+                        "x": "1061.68px",
+                        "y": "839.688px"
+                    }
+                },
+                {
+                    "id": "ref1",
+                    "title": "Overview of LLMs",
+                    "body": "OpenAI Blog, 2021. [Understanding LLMs](https://www.openai.com/blog/understanding-llms)",
+                    "position": {
+                        "x": "189.394px",
+                        "y": "776.281px"
+                    }
+                },
+                {
+                    "id": "ref2",
+                    "title": "Deep Learning for Language Processing",
+                    "body": "Journal of Artificial Intelligence Research, Vaswani et al., 2017. 'Attention Is All You Need'. [Read here](https://www.jair.org/index.php/jair/article/view/11192)",
+                    "position": {
+                        "x": "819.148px",
+                        "y": "1301.6px"
+                    }
+                },
+                {
+                    "id": "ref3",
+                    "title": "Real-World Applications of AI",
+                    "body": "Medium, 2020. 'Exploring Practical Uses of AI'. [Access article](https://medium.com/topic/technology)",
+                    "position": {
+                        "x": "1179.85px",
+                        "y": "1159.65px"
+                    }
+                }
+            ],
+            "connections": [
+                {
+                    "from": "node1",
+                    "to": [
+                        "node2",
+                        "node3",
+                        "node4"
+                    ]
+                },
+                {
+                    "from": "node2",
+                    "to": [
+                        "node1",
+                        "node6",
+                        "node7",
+                        "node14",
+                        "node15",
+                        "node16"
+                    ]
+                },
+                {
+                    "from": "node14",
+                    "to": [
+                        "node2"
+                    ]
+                },
+                {
+                    "from": "node15",
+                    "to": [
+                        "node2"
+                    ]
+                },
+                {
+                    "from": "node16",
+                    "to": [
+                        "node17",
+                        "node2",
+                        "node21",
+                        "node18",
+                        "node19",
+                        "ref1"
+                    ]
+                },
+                {
+                    "from": "node17",
+                    "to": [
+                        "node16"
+                    ]
+                },
+                {
+                    "from": "node3",
+                    "to": [
+                        "node1",
+                        "node8",
+                        "node9",
+                        "node8",
+                        "node9"
+                    ]
+                },
+                {
+                    "from": "node4",
+                    "to": [
+                        "node1",
+                        "node10"
+                    ]
+                },
+                {
+                    "from": "node5",
+                    "to": [
+                        "node10"
+                    ]
+                },
+                {
+                    "from": "node6",
+                    "to": [
+                        "node2"
+                    ]
+                },
+                {
+                    "from": "node7",
+                    "to": [
+                        "node2"
+                    ]
+                },
+                {
+                    "from": "node8",
+                    "to": [
+                        "node3",
+                        "node3"
+                    ]
+                },
+                {
+                    "from": "node9",
+                    "to": [
+                        "node3",
+                        "node3"
+                    ]
+                },
+                {
+                    "from": "node10",
+                    "to": [
+                        "node4",
+                        "node5",
+                        "node11",
+                        "node12",
+                        "node11",
+                        "node12"
+                    ]
+                },
+                {
+                    "from": "node11",
+                    "to": [
+                        "node10",
+                        "node10"
+                    ]
+                },
+                {
+                    "from": "node12",
+                    "to": [
+                        "node10",
+                        "node10"
+                    ]
+                },
+                {
+                    "from": "node21",
+                    "to": [
+                        "node16",
+                        "ref1",
+                        "ref1"
+                    ]
+                },
+                {
+                    "from": "node18",
+                    "to": [
+                        "node16",
+                        "ref2",
+                        "ref2"
+                    ]
+                },
+                {
+                    "from": "node19",
+                    "to": [
+                        "node16",
+                        "node20",
+                        "ref2",
+                        "node20",
+                        "ref2"
+                    ]
+                },
+                {
+                    "from": "node20",
+                    "to": [
+                        "node19",
+                        "node19",
+                        "ref3",
+                        "ref3"
+                    ]
+                },
+                {
+                    "from": "ref1",
+                    "to": [
+                        "node21",
+                        "node16",
+                        "node21"
+                    ]
+                },
+                {
+                    "from": "ref2",
+                    "to": [
+                        "node18",
+                        "node19",
+                        "node18",
+                        "node19"
+                    ]
+                },
+                {
+                    "from": "ref3",
+                    "to": [
+                        "node20",
+                        "node20"
+                    ]
+                }
+            ]
+        };
 
+        async function loadInitialMindMap() {
+            rebuildMindMap(predefinedMindMap);
+        }
     </script>
 </body>
 
